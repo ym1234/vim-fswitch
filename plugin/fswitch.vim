@@ -13,7 +13,6 @@ let s:os_slash = &ssl == 0 && (has("win16") || has("win32") || has("win64")) ? '
 " Default locations - appended to buffer locations unless otherwise specified
 let s:fswitch_global_locs = '.' . s:os_slash
 
--G
 function! s:SetVariables(dst, locs)
     if !exists("b:fswitchdst")
         let b:fswitchdst = a:dst
