@@ -1,20 +1,3 @@
-" ============================================================================
-" File:        fswitch.vim
-"
-" Description: Vim global plugin that provides decent companion source file
-"              switching
-"
-" Maintainer:  Derek Wyatt <derek at myfirstnamemylastname dot org>
-"
-" Last Change: March 23rd 2009
-"
-" License:     This program is free software. It comes without any warranty,
-"              to the extent permitted by applicable law. You can redistribute
-"              it and/or modify it under the terms of the Do What The Fuck You
-"              Want To Public License, Version 2, as published by Sam Hocevar.
-"              See http://sam.zoy.org/wtfpl/COPYING for more details.
-" ============================================================================
-
 if exists("g:disable_fswitch")
     finish
 endif
@@ -24,24 +7,13 @@ if v:version < 700
   finish
 endif
 
-" Version
 let s:fswitch_version = '0.9.5'
-
-" Get the path separator right
 let s:os_slash = &ssl == 0 && (has("win16") || has("win32") || has("win64")) ? '\' : '/'
 
 " Default locations - appended to buffer locations unless otherwise specified
 let s:fswitch_global_locs = '.' . s:os_slash
 
-"
-" s:SetVariables
-"
-" There are two variables that need to be set in the buffer in order for things
-" to work correctly.  Because we're using an autocmd to set things up we need to
-" be sure that the user hasn't already set them for us explicitly so we have
-" this function just to check and make sure.  If the user's autocmd runs after
-" ours then they will override the value anyway.
-"
+-G
 function! s:SetVariables(dst, locs)
     if !exists("b:fswitchdst")
         let b:fswitchdst = a:dst
@@ -51,11 +23,6 @@ function! s:SetVariables(dst, locs)
     endif
 endfunction
 
-"
-" s:FSGetLocations
-"
-" Return the list of possible locations
-"
 function! s:FSGetLocations()
     let locations = []
     if exists("b:fswitchlocs")
@@ -68,20 +35,6 @@ function! s:FSGetLocations()
     return locations
 endfunction
 
-"
-" s:FSGetExtensions
-"
-" Return the list of destination extensions
-"
-function! s:FSGetExtensions()
-    return split(b:fswitchdst, ',')
-endfunction
-
-"
-" s:FSGetFilenameMutations
-"
-" Return the list of possible filename mutations
-"
 function! s:FSGetFilenameMutations()
     if !exists("b:fswitchfnames")
         " For backward-compatibility out default mutation is an identity.
@@ -91,11 +44,6 @@ function! s:FSGetFilenameMutations()
     endif
 endfunction
 
-"
-" s:FSGetMustMatch
-"
-" Return a boolean on whether or not the regex must match
-"
 function! s:FSGetMustMatch()
     let mustmatch = 1
     if exists("b:fsneednomatch") && b:fsneednomatch != 0
@@ -105,38 +53,6 @@ function! s:FSGetMustMatch()
     return mustmatch
 endfunction
 
-"
-" s:FSGetFullPathToDirectory
-"
-" Given the filename, return the fully qualified directory portion
-"
-function! s:FSGetFullPathToDirectory(filename)
-    return expand(a:filename . ':p:h')
-endfunction
-
-"
-" s:FSGetFileExtension
-"
-" Given the filename, returns the extension
-"
-function! s:FSGetFileExtension(filename)
-    return expand(a:filename . ':e')
-endfunction
-
-"
-" s:FSGetFileNameWithoutExtension
-"
-" Given the filename, returns just the file name without the path or extension
-"
-function! s:FSGetFileNameWithoutExtension(filename)
-    return expand(a:filename . ':t:r')
-endfunction
-
-"
-" s:FSMutateFilename
-"
-" Takes a filename and a filename mutation directive and applies the mutation
-" to it.
 function! s:FSMutateFilename(filename, directive)
     let separator = strpart(a:directive, 0, 1)
     let dirparts = split(strpart(a:directive, 1), separator)
@@ -151,15 +67,6 @@ function! s:FSMutateFilename(filename, directive)
     endif
 endfunction
 
-"
-" s:FSGetAlternateFilename
-"
-" Takes the path, name and extension of the file in the current buffer and
-" applies the location to it.  If the location is a regular expression pattern
-" then it will split that up and apply it accordingly.  If the location pattern
-" is actually an explicit relative path or an implicit one (default) then it
-" will simply apply that to the file directly.
-"
 function! s:FSGetAlternateFilename(filepath, filename, newextension, location, mustmatch)
     let parts = split(a:location, ':')
     let cmd = 'rel'
@@ -215,20 +122,12 @@ function! s:FSGetAlternateFilename(filepath, filename, newextension, location, m
     return simplify(path)
 endfunction
 
-"
-" s:FSReturnCompanionFilename
-"
-" This function will return a path that is the best candidate for the companion
-" file to switch to.  If mustBeReadable == 1 when then the companion file will
-" only be returned if it is readable on the filesystem, otherwise it will be
-" returned so long as it is non-empty.
-"
 function! s:FSReturnCompanionFilename(filename, mustBeReadable)
-    let fullpath = s:FSGetFullPathToDirectory(a:filename)
-    let ext = s:FSGetFileExtension(a:filename)
-    let justfile = s:FSGetFileNameWithoutExtension(a:filename)
-    let extensions = s:FSGetExtensions()
-    let filenameMutations = s:FSGetFilenameMutations()
+    let fullpath = expand(a:filename . ':p:h')
+	let ext = expand(a:filename . ':e')
+	let justfile = expand(a:filename . ':t:r')
+	let extensions = split(b:fswitchdst, ',')
+	let filenameMutations = s:FSGetFilenameMutations()
     let locations = s:FSGetLocations()
     let mustmatch = s:FSGetMustMatch()
     let newpath = ''
@@ -252,27 +151,6 @@ function! s:FSReturnCompanionFilename(filename, mustBeReadable)
     return newpath
 endfunction
 
-"
-" FSReturnReadableCompanionFilename
-"
-" This function will return a path that is the best candidate for the companion
-" file to switch to, so long as that file actually exists on the filesystem and
-" is readable.
-"
-function! FSReturnReadableCompanionFilename(filename)
-    return s:FSReturnCompanionFilename(a:filename, 1)
-endfunction
-
-"
-" FSReturnCompanionFilenameString
-"
-" This function will return a path that is the best candidate for the companion
-" file to switch to.  The file does not need to actually exist on the
-" filesystem in order to qualify as a proper companion.
-"
-function! FSReturnCompanionFilenameString(filename)
-    return s:FSReturnCompanionFilename(a:filename, 0)
-endfunction
 
 "
 " FSwitch
@@ -288,14 +166,14 @@ function! FSwitch(filename, precmd)
      \ (!exists("b:fsdisablegloc") || b:fsdisablegloc == 0)
         throw "There are no locations defined (see :h fswitchlocs and :h fsdisablegloc)"
     endif
-    let newpath = FSReturnReadableCompanionFilename(a:filename)
-    let openfile = 1
+    let newpath = s:FSReturnCompanionFilename(a:filename, 1)
+	let openfile = 1
     if !filereadable(newpath)
         if exists("b:fsnonewfiles") || exists("g:fsnonewfiles")
             let openfile = 0
         else
-            let newpath = FSReturnCompanionFilenameString(a:filename)
-        endif
+            let newpath = s:FSReturnCompanionFilename(a:filename, 0)
+		endif
     endif
     if &switchbuf =~ "^use"
         let i = 1
@@ -330,9 +208,6 @@ function! FSwitch(filename, precmd)
     endif
 endfunction
 
-"
-" The autocmds we set up to set up the buffer variables for us.
-"
 augroup fswitch_au_group
     au!
     au BufEnter *.c    call s:SetVariables('h',       'reg:/src/include/,reg:|src|include/**|,ifrel:|/src/|../include|')
@@ -348,17 +223,10 @@ augroup fswitch_au_group
     au BufEnter *.H    call s:SetVariables('C',       'reg:/include/src/,reg:/include.*/src/,ifrel:|/include/|../src|')
 augroup END
 
-"
-" The mappings used to do the good work
-"
-com! FSHere       :call FSwitch('%', '')
-com! FSRight      :call FSwitch('%', 'wincmd l')
-com! FSSplitRight :call FSwitch('%', 'let curspr=&spr | set nospr | vsplit | wincmd l | if curspr | set spr | endif')
-com! FSLeft       :call FSwitch('%', 'wincmd h')
-com! FSSplitLeft  :call FSwitch('%', 'let curspr=&spr | set nospr | vsplit | if curspr | set spr | endif')
-com! FSAbove      :call FSwitch('%', 'wincmd k')
-com! FSSplitAbove :call FSwitch('%', 'let cursb=&sb | set nosb | split | if cursb | set sb | endif')
-com! FSBelow      :call FSwitch('%', 'wincmd j')
-com! FSSplitBelow :call FSwitch('%', 'let cursb=&sb | set nosb | split | wincmd j | if cursb | set sb | endif')
-com! FSTab        :call FSwitch('%', 'tabedit')
+com! FS      call FSwitch('%', '')
+com! FSRight call FSwitch('%', 'WinMoveCommand "l"')
+com! FSLeft  call FSwitch('%', 'WinMoveCommand "h"')
+com! FSAbove call FSwitch('%', 'WinMoveCommand "k"')
+com! FSBelow call FSwitch('%', 'WinMoveCommand "j"')
+com! FSTab   call FSwitch('%', 'tabedit')
 
