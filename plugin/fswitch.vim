@@ -3,7 +3,7 @@ if exists("g:disable_fswitch")
 endif
 
 if v:version < 700
-  echoerr "FSwitch requires Vim 7.0 or higher."
+  echo "FSwitch requires Vim 8.0 or higher."
   finish
 endif
 
@@ -159,7 +159,7 @@ endfunction
 "
 function! FSwitch(filename, precmd)
     if !exists("b:fswitchdst") || strlen(b:fswitchdst) == 0
-        throw 'b:fswitchdst not set - read :help fswitch'
+        throw 'b:fswitchdst not set, read :help fswitch'
     endif
     if (!exists("b:fswitchlocs")   || strlen(b:fswitchlocs) == 0) &&
      \ (!exists("b:fsdisablegloc") || b:fsdisablegloc == 0)
@@ -200,10 +200,10 @@ function! FSwitch(filename, precmd)
                 execute 'edit ' . s:fname
             endif
         else
-            echoerr "Alternate has evaluated to nothing.  See :h fswitch-empty for more info."
+            echo "Alternate has evaluated to nothing.  See :h fswitch-empty for more info."
         endif
     else
-        echoerr "No alternate file found.  'fsnonewfiles' is set which denies creation."
+        echo "No alternate file found.  'fsnonewfiles' is set which denies creation."
     endif
 endfunction
 
