@@ -223,9 +223,9 @@ augroup fswitch_au_group
 augroup END
 
 com! FS      call FSwitch('%', '')
-com! FSRight call FSwitch('%', 'WinMoveCommand "l"')
-com! FSLeft  call FSwitch('%', 'WinMoveCommand "h"')
-com! FSAbove call FSwitch('%', 'WinMoveCommand "k"')
-com! FSBelow call FSwitch('%', 'WinMoveCommand "j"')
+com! FSRight call FSwitch('%', 'WinMove "l"')
+com! FSLeft  call FSwitch('%', 'WinMove "h"')
+com! FSAbove call FSwitch('%', 'WinMove "k"')
+com! FSBelow call FSwitch('%', 'WinMove "j"')
 com! FSTab   call FSwitch('%', 'tabedit')
 
